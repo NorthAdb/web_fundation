@@ -40,7 +40,7 @@ Python 异步 → HTTP → FastAPI → 流式传输 → SSE → WebSocket
 | M6 | 生产基础设施 I · Redis 事件总线 | r1/r2/r3 | Hash/Stream/Pub/Sub 三原语外移，多进程完全体 |
 | M7 | 生产基础设施 II · Nginx 与部署 | n1/n2 | 反代三组生死配置 + 完整拓扑总装 |
 
-详细讲义在 [`course/`](course/)（27 节课，每节含目标/概念/实操/代码流程讲解/自测题/常见坑）。
+详细讲义在 [`course/` 模块讲义](course/module-0-为什么需要网络通信.md)（27 节课，每节含目标/概念/实操/代码流程讲解/自测题/常见坑）。
 
 ## 快速开始
 
@@ -99,7 +99,7 @@ human-in-the-loop：启动任务 → 审批工具调用 → 暂停/恢复 → �
 
 ## 交互式图表（9 张）
 
-[`diagrams/`](diagrams/) 下 9 张 archify 生成的可交互 HTML（支持缩放、路径追踪、明暗主题）：
+[`diagrams/`](diagrams/01-agent-server-architecture.html) 下 9 张 archify 生成的可交互 HTML（支持缩放、路径追踪、明暗主题）：
 
 | # | 图 | 类型 |
 |---|---|---|
@@ -115,9 +115,9 @@ human-in-the-loop：启动任务 → 审批工具调用 → 暂停/恢复 → �
 
 ## 文档系统
 
-- [`course/`](course/) 7+1 份模块讲义（Markdown 源文件）
-- [`lessons/`](lessons/) 3 节互动 HTML 课（含测验、SSE 格式实验室、事件时间线单步回放）
-- [`reference/`](reference/) SSE / WebSocket 速查表
+- [`course/`](course/module-0-为什么需要网络通信.md) 7+1 份模块讲义（Markdown 源文件）
+- [`lessons/`](lessons/0001-course-map.html) 3 节互动 HTML 课（含测验、SSE 格式实验室、事件时间线单步回放）
+- [`reference/`](reference/sse-cheatsheet.html) SSE / WebSocket 速查表
 - [`GLOSSARY.md`](GLOSSARY.md) 全课程统一术语表
 - [`COURSE.md`](COURSE.md) **课程总纲（从这里开始学）**
 - [`course/appendix-troubleshooting.md`](course/appendix-troubleshooting.html) 按症状索引的排障手册

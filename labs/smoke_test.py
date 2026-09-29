@@ -25,6 +25,13 @@ import httpx
 import websockets
 import uvicorn
 
+# Windows 上 stdout 若是管道/重定向（Git Bash、CI、`> log.txt`），编码会退回系统 ANSI
+# 代码页（简中 = GBK/cp936），此时 print("✔") 直接抛 UnicodeEncodeError 中断整个回归。
+# 真实控制台下 Python 本来就写 UTF-8，这句等于无操作。所有可运行入口脚本都带这段守卫。
+for _s in (sys.stdout, sys.stderr):
+    if hasattr(_s, "reconfigure"):
+        _s.reconfigure(encoding="utf-8", errors="replace")
+
 PASS: list[str] = []
 SKIP: list[str] = []
 FAIL: list[tuple[str, str]] = []
@@ -353,9 +360,14 @@ def ensure_redis() -> bool:
 
 
 def run_script(rel: str, timeout: int = 240) -> None:
+    # 子进程必须显式拿 UTF-8：它的 stdout 也是管道，否则 print("✔") 会在子进程里崩掉
+    # （历史上正是这里吞掉了 r2/r3/n1/n2：子进程 rc=1 或解码失败 → stdout=None → TypeError）
+    env = {**os.environ, "PYTHONIOENCODING": "utf-8", "PYTHONUTF8": "1"}
     r = subprocess.run([sys.executable, rel], capture_output=True, text=True,
+                       encoding="utf-8", errors="replace", env=env,
                        timeout=timeout, cwd=".")
-    tail = (r.stdout + r.stderr).strip().splitlines()[-4:]
+    out = ((r.stdout or "") + (r.stderr or "")).strip()
+    tail = out.splitlines()[-4:]
     for line in tail:
         print(f"    {line}")
     if r.returncode != 0:

@@ -6,8 +6,14 @@
 
 import json
 import os
+import sys
 
 import redis
+
+# Windows 管道/重定向下 stdout 退回 GBK：print("✔") 会抛 UnicodeEncodeError 中断脚本
+for _s in (sys.stdout, sys.stderr):
+    if hasattr(_s, "reconfigure"):
+        _s.reconfigure(encoding="utf-8", errors="replace")
 
 r = redis.Redis.from_url(
     os.environ.get("REDIS_URL", "redis://127.0.0.1:6399/0"), decode_responses=True

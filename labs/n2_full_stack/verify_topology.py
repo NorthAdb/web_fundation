@@ -22,6 +22,11 @@ from pathlib import Path
 import httpx
 import websockets
 
+# Windows 管道/重定向下 stdout 退回 GBK：print("✔") 会抛 UnicodeEncodeError 中断脚本
+for _s in (sys.stdout, sys.stderr):
+    if hasattr(_s, "reconfigure"):
+        _s.reconfigure(encoding="utf-8", errors="replace")
+
 LABS = Path(__file__).resolve().parent.parent
 NGINX_PORT = 8080
 
@@ -47,11 +52,23 @@ def sh(cmd: list[str]) -> None:
     subprocess.run(cmd, capture_output=True)
 
 
+def docker_running(name: str) -> bool:
+    """容器是否真的在跑——`docker run` 端口被占时不会报错到我们这儿。"""
+    r = subprocess.run(["docker", "inspect", "-f", "{{.State.Running}}", name],
+                       capture_output=True, text=True, encoding="utf-8", errors="replace")
+    return r.returncode == 0 and r.stdout.strip() == "true"
+
+
 def start_nginx() -> None:
     sh(["docker", "rm", "-f", "course-nginx-n2"])
     conf_path = str((LABS / "n2_full_stack" / "conf" / "n2-full.conf").resolve()).replace("\\", "/")
     sh(["docker", "run", "-d", "--name", "course-nginx-n2", "-p", f"{NGINX_PORT}:8080",
         "-v", f"{conf_path}:/etc/nginx/conf.d/default.conf", "nginx:1.28-alpine"])
+    if not docker_running("course-nginx-n2"):
+        raise RuntimeError(
+            f"nginx 容器没起来：宿主 {NGINX_PORT} 很可能已被别的容器占用"
+            f"（docker ps --format '{{{{.Names}}}} {{{{.Ports}}}}' 查看后 docker rm -f <名字>）"
+        )
 
 
 async def serve(port: int) -> asyncio.subprocess.Process:
@@ -107,6 +124,9 @@ async def main() -> None:
             for i in range(6):
                 r = await c.post("http://127.0.0.1:8080/agent/tasks",
                                  json={"goal": f"topology-{i}"})
+                assert r.status_code == 200, (
+                    f"经 Nginx 创建任务失败：HTTP {r.status_code} {r.text[:200]}"
+                )
                 tids.append(r.json()["task_id"])
             listed_a = (await c.get("http://127.0.0.1:18901/agent/tasks")).json()
             listed_b = (await c.get("http://127.0.0.1:18902/agent/tasks")).json()

@@ -6,8 +6,14 @@
 
 import asyncio
 import json
+import sys
 
 import websockets  # uvicorn[standard] 自带；独立安装：pip install websockets
+
+# Windows 管道/重定向下 stdout 退回 GBK：print("✔") 会抛 UnicodeEncodeError 中断脚本
+for _s in (sys.stdout, sys.stderr):
+    if hasattr(_s, "reconfigure"):
+        _s.reconfigure(encoding="utf-8", errors="replace")
 
 BASE = "ws://127.0.0.1:8804"
 

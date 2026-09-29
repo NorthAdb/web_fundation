@@ -15,6 +15,11 @@ from pathlib import Path
 
 import httpx
 
+# Windows 管道/重定向下 stdout 退回 GBK：print("✔") 会抛 UnicodeEncodeError 中断脚本
+for _s in (sys.stdout, sys.stderr):
+    if hasattr(_s, "reconfigure"):
+        _s.reconfigure(encoding="utf-8", errors="replace")
+
 LABS = Path(__file__).resolve().parent.parent  # labs/
 sys.path.insert(0, str(LABS))
 from redis_client import get_redis  # noqa: E402

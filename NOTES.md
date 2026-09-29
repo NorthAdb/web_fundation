@@ -22,6 +22,9 @@
 - lessons/ 现有：0001 课程地图（含测验）、0002 SSE 格式实验室（交互解析器）、0003 Agent 事件时间线浏览器（单步回放）；下一课从 0004 起
 - **所有 lessons/、reference/、labs 实验页面与生成的 .html 文档页必须引入共享导航组件**：`<script src="{base}assets/nav.js" data-base="{base}" data-track="lesson|readings|reference"></script>`（放在 </body> 前；base 按页面深度，根目录是空字符串）。它注入左侧目录抽屉（全课程地图+当前页高亮）和 lesson/readings 页底部的翻页条；页面内不要再手写"下一课"链接。**根目录页的 data-base="" 是合法值**，nav.js 已按 `!== undefined` 判断（勿改回 `|| "../"`，空字符串是假值会跳级）。改动后跑 `node tools/check_links.js` 全站自检
 - **markdown 文档是源文件**：COURSE/GLOSSARY/README/MISSION/RESOURCES/course/*/labs README 均由 `python tools/build_docs.py` 渲染为同款样式的 .html（含侧栏与讲义篇间翻页）。改 .md 后必须重跑构建；新增文档要登记进 build_docs.py 的 BUILD 列表。不要手改生成的 .html
+- **正文里不要写目录链接**（如 `[course/](course/)`）：build_docs 会把 `xxx/` 重写成 `xxx/README.html`，而 course/、diagrams/、lessons/、reference/ 下没有 README → 断链。指向该目录的入口页（如 `course/module-0-…md`、`diagrams/01-….html`）；改完跑 `node tools/check_links.js` 验证
+- **所有可运行 Python 入口脚本（含 tools/build_docs.py）在 import 之后必须有 UTF-8 控制台守卫**：Windows 上 stdout 若是管道/重定向（Git Bash、CI、`> log.txt`）会退回 GBK，`print("✔")` 直接抛 UnicodeEncodeError 中断脚本——历史上它让 smoke_test 的 r2/r3/n1/n2 全变"失败"
 - 每完成一个模块，写一条 learning-record 记录证据
-- 改动 labs/ 代码或升级依赖后，必须跑 `labs/smoke_test.py` 回归（9 个实验端到端）
-- 图表在 diagrams/（archify 产出，共 6 张），课程文档引用它们；新增图表遵循 learning-records/0003 的几何规则
+- 改动 labs/ 代码或升级依赖后，必须跑 `labs/smoke_test.py` 回归（14 个实验端到端：v0 v2 v3a/b/c v4 v5 v6 v7 r1 r2 r3 n1 n2）
+- n1/n2 依赖宿主 8080 与 Docker：开跑前若别的容器占着 8080，脚本会 fail-fast 报错（不会再静默打到旧容器上）；清理残留见 learning-records/0004 第 6 条与 0005
+- 图表在 diagrams/（archify 产出，共 9 张），课程文档引用它们；新增图表遵循 learning-records/0003 的几何规则

@@ -17,6 +17,11 @@ from pathlib import Path
 
 import markdown
 
+# Windows 管道/重定向下 stdout 退回 GBK：print("✔") 会抛 UnicodeEncodeError 而中断构建。
+for _s in (sys.stdout, sys.stderr):
+    if hasattr(_s, "reconfigure"):
+        _s.reconfigure(encoding="utf-8", errors="replace")
+
 ROOT = Path(__file__).resolve().parent.parent
 
 # (源文件相对路径, 页面栏目标识, 翻页轨道)
